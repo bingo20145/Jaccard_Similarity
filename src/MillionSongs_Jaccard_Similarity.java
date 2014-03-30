@@ -7,21 +7,36 @@ import java.util.Random;
 
 public class MillionSongs_Jaccard_Similarity {
 	public static void main(String[] args) throws IOException {
-		int numberOfDocuments = 210519;
-		BitSet[] bitArray = new BitSet[5000];
-		for(int i = 0; i < 5000; i++) {
-			bitArray[i] = new BitSet(numberOfDocuments);
+		int numDocuments = 210519;
+        int numWords = 5000;
+		BitSet[] bitArray = new BitSet[numWords];
+		for(int i = 0; i < numWords; i++) {
+			bitArray[i] = new BitSet(numDocuments);
 		}
 		
 		bitArray = parseSongs(bitArray);
 		
-		for(int i = 0; i < 5000; i++) {
+		for(int i = 0; i < numWords; i++) {
 			System.out.print(bitArray[i].get(0) + ", ");
 		}
 
+        int numHashFunctions = 100;
+        int[][] hashArray;
+        hashArray = generateHash(numHashFunctions);
+        double[][] signature = new double[numHashFunctions][numDocuments];
+
 
 	}
-
+    /*
+    *  hash functions are in the form ax+b mod p
+    *  p = 210523, 210523 is the closest prime number after
+    *  x = row number
+    *  a and b are randomly generated and capped at 10000
+    * */
+    public static int calculateHash(int row, int a, int b) {
+        int x = a*row + b % 210523;
+        return x;
+    }
 	public static BitSet[] parseSongs(BitSet[] b) throws IOException {
 		File path = new File("mxm_dataset_train.txt");
 		BufferedReader br = new BufferedReader(new FileReader(path));
@@ -53,7 +68,7 @@ public class MillionSongs_Jaccard_Similarity {
 	 * be used in the (ax+b mod p) hash function. It returns an array of randomly
 	 * generated a and b values to use in hashing.
 	 */
-	public int[][] generateHash(int numHashFunctions) {
+	public static int[][] generateHash(int numHashFunctions) {
 		//Define random object
 		Random rand = new Random();
 		//allocate memory for array of hashing values
