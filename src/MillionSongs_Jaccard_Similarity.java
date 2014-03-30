@@ -10,7 +10,7 @@ public class MillionSongs_Jaccard_Similarity {
 		int numberOfDocuments = 210519;
 		BitSet[] bitArray = new BitSet[5000];
 		for(int i = 0; i < 5000; i++) {
-			bitArray[i] = new BitSet(210519);
+			bitArray[i] = new BitSet(numberOfDocuments);
 		}
 		
 		bitArray = parseSongs(bitArray);
@@ -23,10 +23,10 @@ public class MillionSongs_Jaccard_Similarity {
 	}
 
 	public static BitSet[] parseSongs(BitSet[] b) throws IOException {
-		File path = new File("C:/Users/bowmmh11/workspace/MillionSongs_Jaccard_Similarity/src/mxm_dataset_train.txt");
+		File path = new File("mxm_dataset_train.txt");
 		BufferedReader br = new BufferedReader(new FileReader(path));
 		String line;
-		int tempInts = 0;
+		int tempInts;
 		int count = -1;
 		while((line = br.readLine()) != null) {
 			//increment song count
@@ -61,8 +61,8 @@ public class MillionSongs_Jaccard_Similarity {
 
 		//populate array with randomly generated integers
 		for(int i = 0; i < numHashFunctions; i++) {
-			h[i][0] = rand.nextInt();
-			h[i][1] = rand.nextInt();
+			h[i][0] = rand.nextInt(10000);
+			h[i][1] = rand.nextInt(10000);
 		}
 		return h;
 	}
