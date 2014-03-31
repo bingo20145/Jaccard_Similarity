@@ -21,20 +21,26 @@ public class JaccardSimilarity {
 
         int numHashFunctions = 100;
         //create signature matrix
-        double[][] signatures = new double[numHashFunctions][numDocuments];
-        //initialize signature matrix entires to infinity
+        int[][] signatures = new int[numHashFunctions][numDocuments];
+        //initialize signature matrix entries to infinity
+        // in this case infinity is the max value of integers ie. 2147483647
         for (int i = 0; i < numHashFunctions; i++) {
             for (int j = 0; j < numDocuments; j++) {
-                signatures[i][j] = Double.POSITIVE_INFINITY;
+                signatures[i][j] = Integer.MAX_VALUE;
             }
         }
-        signatures = calculateSignatures(bitMatrix,numHashFunctions , numDocuments, signatures);
-	}
+        signatures = calculateSignatures(bitMatrix, numHashFunctions, numDocuments, signatures);
+        //testing matrix values for correctness
+       /* for (int k = 0; k < numDocuments; k++) {
+            System.out.print(signatures[0][k] + ", ");
+        }*/
+    }
 
-    public static double[][] calculateSignatures(BitSet[] bitMatrix, int numHashFunctions, int numDocuments, double[][] signatures) {
+    public static int[][] calculateSignatures(BitSet[] bitMatrix, int numHashFunctions, int numDocuments, int[][] signatures) {
         int[][] hashArray = generateHashFunction(numHashFunctions);
         for (int i = 0; i < numHashFunctions; i++) {
             int hash = calculateHash(i, hashArray[i][0], hashArray[i][1]);
+            System.out.println(hash);
             for (int j = 0; j < numDocuments; j++) {
                 if(bitMatrix[i].get(j)) {
                     if (hash < signatures[i][j]) {
@@ -103,8 +109,8 @@ public class JaccardSimilarity {
 
 		//populate array with randomly generated integers
 		for(int i = 0; i < numHashFunctions; i++) {
-			hashArray[i][0] = rand.nextInt(10000);
-			hashArray[i][1] = rand.nextInt(10000);
+			hashArray[i][0] = rand.nextInt(5);
+			hashArray[i][1] = rand.nextInt(10);
 		}
 		return hashArray;
 	}
