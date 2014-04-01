@@ -35,7 +35,7 @@ public class MillionSongs_Jaccard_Similarity {
 			bucket = fillBucket(temp, i, bucket, sigArray);
 			for(int k = 0; k < 210519; k++) {
 				if(bucket[k].size() > 1) {
-					if(checkIndices(indices, bucket[k].get(0), bucket[k].get(1))) {
+					if(!checkIndices(indices, bucket[k].get(0), bucket[k].get(1))) {
 						for(int j = 1; j < bucket[k].size(); j++) {
 							if(JacardSim(bucket[k].get(j-1), bucket[k].get(j), bitArray) == true) {
 								indices[count][0] = bucket[k].get(j-1);
@@ -45,12 +45,14 @@ public class MillionSongs_Jaccard_Similarity {
 						}
 					}
 				}
+				if(bucket[k].size() > 0) {
+					bucket[k].clear();
+				}
 			}
-			for(int p = 0; p < 210523; p++) {
-				bucket[p].clear();
-			}
+			System.out.println("Count is: " + count);
 			temp = i+1;
 		}
+		System.out.println("****HOLY FUCKING SHIT IT'S DONE!! THE COUNT WAS: " + count + "****");
 	}
 	
 	
@@ -63,11 +65,13 @@ public class MillionSongs_Jaccard_Similarity {
 	}
 	
 	public static boolean checkIndices(int[][] indexes, int smaller, int larger) {
+		/*
 		for(int i = 0; i < 15000; i++) {
 			if((indexes[i][0] == smaller) && (indexes[i][1] == larger)) {
 				return true;
 			}
 		}
+		*/
 		return false;
 	}
 	
@@ -77,7 +81,7 @@ public class MillionSongs_Jaccard_Similarity {
 			bucketValue = Math.abs(bucketValue);
 			bucket[bucketValue].addElement(i);
 		}
-		System.out.println("Bucket " + (start/5) + " done");
+		System.out.println("Bucket " + ((start/5)+1) + " done");
 		return bucket;
 	}
 	
@@ -89,6 +93,9 @@ public class MillionSongs_Jaccard_Similarity {
 		}
 		number = Long.parseLong(literal);
 		int result = (int)(number%210523);
+		if(result == 210523) {
+			result = 210522;
+		}
 		result = Math.abs(result);
 		return result;
 		
@@ -156,8 +163,8 @@ public class MillionSongs_Jaccard_Similarity {
 		int union = 0;
 		double similarity;
 		for(int z = 0; z < 5000; z++) {
-			if(value[x].get(z) == value[i].get(z)) {
-				if(value[x].get(z) == false) {
+			if(value[z].get(x) == value[z].get(i)) {
+				if(value[z].get(x) == false) {
 					//do nothing
 				}
 				else {
