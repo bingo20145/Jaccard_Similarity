@@ -58,7 +58,7 @@ public class MillionSongs_Jaccard_Similarity {
 	
 	
 	public static Vector[] reduceVector(Vector[] v) {
-		for(int i = 0; i < 210519; i++) {
+		for(int i = 0; i < 210524; i++) {
 			v[i] = new Vector<>(0);
 		}
 		return v;
@@ -79,7 +79,12 @@ public class MillionSongs_Jaccard_Similarity {
 		for(int i = 0; i < 210519; i++) {
 			int bucketValue = prependSignal(start, end, i, sigArray);
 			bucketValue = Math.abs(bucketValue);
-			bucket[bucketValue].addElement(i);
+			try {
+				bucket[bucketValue].addElement(i);
+			}
+			catch(NullPointerException e) {
+				System.out.println(bucketValue + " " + start + " " + end + " " + i);
+			}
 		}
 		System.out.println("Bucket " + ((start/5)+1) + " done");
 		return bucket;
@@ -93,9 +98,6 @@ public class MillionSongs_Jaccard_Similarity {
 		}
 		number = Long.parseLong(literal);
 		int result = (int)(number%210523);
-		if(result == 210523) {
-			result = 210522;
-		}
 		result = Math.abs(result);
 		return result;
 		
