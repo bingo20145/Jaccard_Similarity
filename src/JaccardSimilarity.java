@@ -30,21 +30,24 @@ public class JaccardSimilarity {
             }
         }
         signatures = calculateSignatures(bitMatrix, numHashFunctions, numDocuments, signatures);
-        //testing matrix values for correctness
-       /* for (int k = 0; k < numDocuments; k++) {
-            System.out.print(signatures[0][k] + ", ");
-        }*/
     }
 
+    //
+/*    public static int createKeyForBucket(int[][] signatures) {
+
+        return  result;
+    }*/
+    //calculates the signature matrix from the characteristic matrix using randomly generated hash functions
     public static int[][] calculateSignatures(BitSet[] bitMatrix, int numHashFunctions, int numDocuments, int[][] signatures) {
         int[][] hashArray = generateHashFunction(numHashFunctions);
         for (int i = 0; i < numHashFunctions; i++) {
-            int hash = calculateHash(i, hashArray[i][0], hashArray[i][1]);
-            System.out.println(hash);
+            int[] hash = calculateHash(i, hashArray, numHashFunctions);
             for (int j = 0; j < numDocuments; j++) {
                 if(bitMatrix[i].get(j)) {
-                    if (hash < signatures[i][j]) {
-                        signatures[i][j] = hash;
+                    for (int k = 0; k < numHashFunctions; k++) {
+                        if(hash[k] < signatures[k][j]) {
+                            signatures[k][j] = hash[k];
+                        }
                     }
                 }
             }
@@ -55,10 +58,14 @@ public class JaccardSimilarity {
     *  hash functions are in the form ax+b mod p
     *  p = 210523 because 210523 is the closest prime number after 210519
     *  x = row number
-    *  a and b are randomly generated and capped at 10000 for simplicity
+    *  a and b are randomly generated and capped at 5 and 10 for simplicity
     * */
-    public static int calculateHash(int row, int a, int b) {
-        return ((a*row) + b) % 210523;
+    public static int[] calculateHash(int row, int[][] hashArray, int numHashFunctions) {
+        int[] hash = new int[numHashFunctions];
+        for (int i = 0; i < numHashFunctions; i++) {
+            hash[i] = ( (hashArray[i][0] * row) + hashArray[i][1]) % 9973;
+        }
+        return hash;
     }
     /*
     * open data set and parse songs word by word
@@ -88,8 +95,6 @@ public class JaccardSimilarity {
 		//return bitset matrix
 		return b;
 	}
-
-
 	/*
 	 * generateHashFunction() takes in the desired number of hash functions to be used when
 	 * computing the minhash of the lyric values, and randomly generates values to
@@ -109,7 +114,7 @@ public class JaccardSimilarity {
 
 		//populate array with randomly generated integers
 		for(int i = 0; i < numHashFunctions; i++) {
-			hashArray[i][0] = rand.nextInt(5);
+			hashArray[i][0] = rand.nextInt(20);
 			hashArray[i][1] = rand.nextInt(10);
 		}
 		return hashArray;
