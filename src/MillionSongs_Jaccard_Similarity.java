@@ -4,21 +4,103 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.Random;
+import java.util.Vector;
+
 
 public class MillionSongs_Jaccard_Similarity {
 	public static void main(String[] args) throws IOException {
 		int numHashfunctions = 100;
 		int numberOfDocuments = 210519;
+		int count = 0;
 		BitSet[] bitArray = new BitSet[5000];
 		for(int i = 0; i < 5000; i++) {
 			bitArray[i] = new BitSet(numberOfDocuments);
 		}
-		double sigArray[][] = new double[numHashfunctions][210523];
+		int sigArray[][] = new int[numHashfunctions][210523];
+		for(int i = 0; i < numHashfunctions; i++) {
+			for(int j = 0; j < numberOfDocuments; j++) {
+				sigArray[i][j] = Integer.MAX_VALUE;
+			}
+		}
 		bitArray = parseSongs(bitArray);
 		sigArray = calculateSignatures(bitArray, sigArray);
-		for(int i = 0; i < 210519; i++) {
-			System.out.print(sigArray[0][i] + ", ");
+		
+		
+
+		Vector<Integer>[] bucket = new Vector[210524];
+		bucket = reduceVector(bucket);
+		int temp = 0;
+		int[][] indices = new int [15000][2];
+		for(int i = 4; i < 100; i = i+5) {
+			bucket = fillBucket(temp, i, bucket, sigArray);
+			for(int k = 0; k < 210519; k++) {
+				if(bucket[k].size() > 1) {
+					if(!checkIndices(indices, bucket[k].get(0), bucket[k].get(1))) {
+						for(int j = 1; j < bucket[k].size(); j++) {
+							if(JacardSim(bucket[k].get(j-1), bucket[k].get(j), bitArray) == true) {
+								indices[count][0] = bucket[k].get(j-1);
+								indices[count][1] = bucket[k].get(j);
+								count++;
+							}
+						}
+					}
+				}
+				if(bucket[k].size() > 0) {
+					bucket[k].clear();
+				}
+			}
+			System.out.println("Count is: " + count);
+			temp = i+1;
 		}
+		System.out.println("****HOLY FUCKING SHIT IT'S DONE!! THE COUNT WAS: " + count + "****");
+	}
+	
+	
+	
+	public static Vector[] reduceVector(Vector[] v) {
+		for(int i = 0; i < 210524; i++) {
+			v[i] = new Vector<>(0);
+		}
+		return v;
+	}
+	
+	public static boolean checkIndices(int[][] indexes, int smaller, int larger) {
+		/*
+		for(int i = 0; i < 15000; i++) {
+			if((indexes[i][0] == smaller) && (indexes[i][1] == larger)) {
+				return true;
+			}
+		}
+		*/
+		return false;
+	}
+	
+	public static Vector[] fillBucket(int start, int end, Vector[] bucket, int[][] sigArray) {
+		for(int i = 0; i < 210519; i++) {
+			int bucketValue = prependSignal(start, end, i, sigArray);
+			bucketValue = Math.abs(bucketValue);
+			try {
+				bucket[bucketValue].addElement(i);
+			}
+			catch(NullPointerException e) {
+				System.out.println(bucketValue + " " + start + " " + end + " " + i);
+			}
+		}
+		System.out.println("Bucket " + ((start/5)+1) + " done");
+		return bucket;
+	}
+	
+	public static int prependSignal(int start, int end, int column, int[][] sig) {
+		String literal = "";
+		long number;
+		for(int i = start; i < end; i++) {
+			literal = literal + Integer.toString(sig[i][column]);
+		}
+		number = Long.parseLong(literal);
+		int result = (int)(number%210523);
+		result = Math.abs(result);
+		return result;
+		
 	}
 	
 	/*
@@ -26,10 +108,10 @@ public class MillionSongs_Jaccard_Similarity {
 	 * and sets the corresponding bit matrix value to true.
 	 */
 	public static BitSet[] parseSongs(BitSet[] b) throws IOException {
-		File path = new File("mxm_dataset_train.txt");
+		File path = new File("C:/Users/bowmmh11/workspace/MillionSongs_Jaccard_Similarity/src/mxm_dataset_train.txt");
 		BufferedReader br = new BufferedReader(new FileReader(path));
 		String line;
-		int tempInts;
+		int tempInts = 0;
 		int count = -1;
 		while((line = br.readLine()) != null) {
 			//increment song count
@@ -64,36 +146,64 @@ public class MillionSongs_Jaccard_Similarity {
 
 		//populate array with randomly generated integers
 		for(int i = 0; i < numHashFunctions; i++) {
-			h[i][0] = rand.nextInt(10000);
-			h[i][1] = rand.nextInt(10000);
+			h[i][0] = rand.nextInt(20);
+			h[i][1] = rand.nextInt(10);
 		}
 		return h;
 	}
 	
-	public static int calculateHash(int row, int a, int b) {
-		int x = (a*row+b)%210523;
-		return x;
+	public static int[] calculateHash(int row, int[][] hashArray, int numHash) {
+		int[] hash = new int[numHash];
+		for(int i = 0; i < numHash; i++) {
+			hash[i] = ((hashArray[i][0]*row)+hashArray[i][1])%9973;
+		}
+		return hash;
 	}
 	
-	public static double[][] calculateSignatures(BitSet[] value, double[][] sigArray) {
+	public static boolean JacardSim(int x, int i, BitSet[] value) {
+		int intersect = 0;
+		int union = 0;
+		double similarity;
+		for(int z = 0; z < 5000; z++) {
+			if(value[z].get(x) == value[z].get(i)) {
+				if(value[z].get(x) == false) {
+					//do nothing
+				}
+				else {
+					intersect++;
+				}
+			}
+			else {
+				union++;
+			}
+
+		}
+		similarity = (double)intersect/(intersect+union);
+		if(similarity >= 0.95) {
+			return true;
+		}
+		else return false;
+	}
+
+	public static int[][] calculateSignatures(BitSet[] value, int[][] sigArray) {
 		int numHashfunctions = 100;
 		int[][] hashArray;
 		hashArray = generateHash(numHashfunctions);
-		for(int i = 0; i < numHashfunctions; i++) {
-			for(int j = 0; j < 210523; j++) {
-				sigArray[i][j] = Double.POSITIVE_INFINITY;
-			}
-		}
-		for(int i = 0; i < numHashfunctions; i++) {
-			int hash = calculateHash(i, hashArray[i][0], hashArray[i][1]);
+		int[] hashValues;
+		
+		for(int i = 0; i < 5000; i++) {
+			hashValues = calculateHash(i, hashArray, numHashfunctions);
 			for(int j = 0; j < 210519; j++) {
-				if(value[i].get(j) == true) {
-					if(hash < sigArray[i][j]) {
-						sigArray[i][j] = hash;
+				if(value[i].get(j)) {
+					for(int k = 0; k < numHashfunctions; k++) {
+						if(sigArray[k][j] > hashValues[k]) {
+							sigArray[k][j] = hashValues[k];
+						}
 					}
 				}
 			}
 		}
+		
 		return sigArray;
 	}
 
